@@ -1,0 +1,21 @@
+{
+  "name": "longest-common-substring",
+  "version": "0.0.0",
+  "description": "find the longest string that is a substring of two strings",
+  "main": "index.js",
+  "author": "Chad Kirby",
+  "repository": "https://github.com/chadkirby/longest-common-substring",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-plugin-turbopatent": "^3.0.2",
+    "tape": "^4.9.1"
+  },
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "test": "tape tests/*-test.js && yarn lint",
+    "lint": "eslint ."
+  }
+}
