@@ -17,5 +17,8 @@
   "scripts": {
     "test": "tape tests/*-test.js && yarn lint",
     "lint": "eslint ."
+  },
+  "dependencies": {
+    "porter-stemmer": "^0.9.1"
   }
 }
