@@ -12,9 +12,9 @@ test('findCommonPhrases honors threshold', function(assert) {
   assert.deepEqual(
     res0,
     [
-      { offset: 0, substring: 'one' },
-      { offset: 4, substring: 'two two' },
-      { offset: 12, substring: 'three three three' }
+      { offset: 0, substring: 'one', tokenOffset: 0, tokens: [ 'one' ] },
+      { offset: 4, substring: 'two two', tokenOffset: 1, tokens: [ 'two', 'two' ] },
+      { offset: 12, substring: 'three three three', tokenOffset: 3, tokens: [ 'three', 'three', 'three' ] }
     ]
   );
 
@@ -22,15 +22,15 @@ test('findCommonPhrases honors threshold', function(assert) {
   assert.deepEqual(
     res0,
     [
-      { offset: 4, substring: 'two two' },
-      { offset: 12, substring: 'three three three' }
+      { offset: 4, substring: 'two two', tokenOffset: 1, tokens: [ 'two', 'two' ] },
+      { offset: 12, substring: 'three three three', tokenOffset: 3, tokens: [ 'three', 'three', 'three' ] }
     ]
   );
 
   [ res0 ] = fcp(...strings, { threshold: 3, trimOverlaps: true });
   assert.deepEqual(
     res0,
-    [ { offset: 12, substring: 'three three three' } ]
+    [ { offset: 12, substring: 'three three three', tokenOffset: 3, tokens: [ 'three', 'three', 'three' ] } ]
   );
 
   [ res0 ] = fcp(...strings, { threshold: 4, trimOverlaps: true });
@@ -51,21 +51,21 @@ test('findCommonPhrases is optionally caseInsensitive', function(assert) {
 
   assert.deepEqual(
     res0,
-    [ { offset: 17, substring: 'thing comprising magic beans' } ]
+    [ { offset: 17, substring: 'thing comprising magic beans', tokenOffset: 3, tokens: [ 'thing', 'comprising', 'magic', 'beans' ] } ]
   );
   assert.deepEqual(
     res1,
-    [ { offset: 2, substring:'thing comprising magic beans' } ]
+    [ { offset: 2, substring: 'thing comprising magic beans', tokenOffset: 1, tokens: [ 'thing', 'comprising', 'magic', 'beans' ] } ]
   );
 
-  [ res0, res1 ] = fcp(...strings, { caseInsensitive: true });
+  [ res0, res1 ] = fcp(...strings, { tokenNormalizer: (tk) => tk.toLowerCase() });
   assert.deepEqual(
     res0,
-    [ { offset: 15, substring: 'a thing comprising magic beans' } ]
+    [ { offset: 15, substring: 'a thing comprising magic beans', tokenOffset: 2, tokens: [ 'a', 'thing', 'comprising', 'magic', 'beans' ] } ]
   );
   assert.deepEqual(
     res1,
-    [ { offset: 0, substring: 'A thing comprising magic beans' } ]
+    [ { offset: 0, substring: 'A thing comprising magic beans', tokenOffset: 0, tokens: [ 'a', 'thing', 'comprising', 'magic', 'beans' ] } ]
   );
 
   assert.end();
@@ -79,21 +79,21 @@ test('findCommonPhrases is optionally stem insensitive', function(assert) {
   let [ res0, res1 ] = fcp(...strings);
   assert.deepEqual(
     res0,
-    [ { offset: 25, substring: 'a climbable vine' } ]
+    [ { offset: 25, substring: 'a climbable vine', tokenOffset: 3, tokens: [ 'a', 'climbable', 'vine' ] } ]
   );
   assert.deepEqual(
     res1,
-    [ { offset: 53, substring: 'a climbable vine' } ]
+    [ { offset: 53, substring: 'a climbable vine', tokenOffset: 8, tokens: [ 'a', 'climbable', 'vine' ] } ]
   );
 
   [ res0, res1 ] = fcp(...strings, { conflateStems: true });
   assert.deepEqual(
     res0,
-    [ { offset: 15, substring: 'providing a climbable vine' } ]
+    [ { offset: 15, substring: 'providing a climbable vine', tokenOffset: 2, tokens: [ 'provid', 'a', 'climbabl', 'vine' ] } ]
   );
   assert.deepEqual(
     res1,
-    [ { offset: 45, substring: 'provide a climbable vine' } ]
+    [ { offset: 45, substring: 'provide a climbable vine', tokenOffset: 7, tokens: [ 'provid', 'a', 'climbabl', 'vine' ] } ]
   );
 
   assert.end();
@@ -109,15 +109,15 @@ test('findCommonPhrases ignores non-word chars', function(assert) {
   assert.deepEqual(
     res0,
     [
-      { offset: 34, substring: 'got "nothing in common" with the' },
-      { offset: 63, substring: 'the human race' }
+      { offset: 34, substring: 'got "nothing in common" with the', tokenOffset: 8, tokens: [ 'got', 'nothing', 'in', 'common', 'with', 'the' ] },
+      { offset: 63, substring: 'the human race', tokenOffset: 13, tokens: [ 'the', 'human', 'race' ] }
     ]
   );
   assert.deepEqual(
     res1,
     [
-      { offset: 23, substring: 'got nothing in common with the' },
-      { offset: 62, substring: 'the human race' }
+      { offset: 23, substring: 'got nothing in common with the', tokenOffset: 5, tokens: [ 'got', 'nothing', 'in', 'common', 'with', 'the' ] },
+      { offset: 62, substring: 'the human race', tokenOffset: 13, tokens: [ 'the', 'human', 'race' ] }
     ]
   );
 
@@ -135,9 +135,9 @@ test('findCommonPhrases optionally de-overlaps', function(assert) {
   assert.deepEqual(
     res0,
     [
-      { offset: 0, substring: 'b c b' },
-      { offset: 4, substring: 'b c b a' },
-      { offset: 10, substring: 'a b c' }
+      { offset: 0, substring: 'b c b', tokenOffset: 0, tokens: [ 'b', 'c', 'b' ] },
+      { offset: 4, substring: 'b c b a', tokenOffset: 2, tokens: [ 'b', 'c', 'b', 'a' ] },
+      { offset: 10, substring: 'a b c', tokenOffset: 5, tokens: [ 'a', 'b', 'c' ] }
     ]
   );
 
@@ -145,9 +145,9 @@ test('findCommonPhrases optionally de-overlaps', function(assert) {
   assert.deepEqual(
     res0,
     [
-      { offset: 0, substring: 'b c' },
-      { offset: 4, substring: 'b c b a' },
-      { offset: 12, substring: 'b c' }
+      { offset: 0, substring: 'b c', tokenOffset: 0, tokens: [ 'b', 'c' ] },
+      { offset: 4, substring: 'b c b a', tokenOffset: 2, tokens: [ 'b', 'c', 'b', 'a' ] },
+      { offset: 12, substring: 'b c', tokenOffset: 6, tokens: [ 'b', 'c' ] }
     ]
   );
 
@@ -170,7 +170,7 @@ test('optional plural', function(assert) {
   );
   assert.deepEqual(
     res0,
-    [ { offset: 13, substring: 'are' } ]
+    [ { offset: 13, substring: 'are', tokenOffset: 2, tokens: [ 'are' ] } ]
   );
 
   assert.end();

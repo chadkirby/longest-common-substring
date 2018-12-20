@@ -88,24 +88,23 @@ function reduceOverlaps(inputs, threshold = 0) {
   return sequences.sort(({ offset1: aa }, { offset1: bb }) => aa - bb);
 }
 
-function makeOutput(sequences, { all: tokens }, offsetKey) {
+function makeOutput(sequences, { all, tokens }, offsetKey) {
   return sequences.map((seq) => {
-    let index = seq[offsetKey] * 2 + 1;
+    let tokenOffset = seq[offsetKey];
+    let index = tokenOffset * 2 + 1;
     let length = 2 * seq.substring.length;
-    let offset = tokens.slice(0, index).join(``).length;
-    let substring = tokens.slice(index, index + length - 1).join(``);
-    return { offset, substring };
+    let offset = all.slice(0, index).join(``).length;
+    let substring = all.slice(index, index + length - 1).join(``);
+    return { offset, substring, tokenOffset, tokens: tokens.slice(tokenOffset, tokenOffset + seq.substring.length) };
   });
 }
 
-function tokenizer(str, { caseInsensitive = false, conflateStems = false }) {
+function tokenizer(str, { tokenNormalizer = (tk) => tk, conflateStems = false, splitter = /([-\w]+(?:[(]s[)])?)/ }) {
   // split on word-chars & dashes with optional trailing "(s)"
-  let all = str.split(/([-\w]+(?:[(]s[)])?)/);
+  let all = str.split(splitter);
   // odd-indexed items are the tokens
   let tokens = all.filter((tk, ii) => ii % 2);
-  if (caseInsensitive) {
-    tokens = tokens.map((token) => token.toLowerCase());
-  }
+  tokens = tokens.map(tokenNormalizer);
   if (conflateStems) {
     tokens = tokens.map(stem);
   }
