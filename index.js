@@ -33,9 +33,14 @@ function findCommonSubstrings(str1 = ``, str2 = ``, { threshold = 3 } = {}) {
 }
 
 function findCommonPhrases(str1 = ``, str2 = ``, options = {}) {
-  let { threshold = 3, trimOverlaps = false } = options;
   let tk1 = tokenizer(str1, options);
   let tk2 = tokenizer(str2, options);
+
+  return findCommonTokens(tk1, tk2, options);
+}
+
+function findCommonTokens(tk1, tk2, options) {
+  let { threshold = 3, trimOverlaps = false } = options;
   let vocabulary = makeVocabulary(tk1);
 
   let sequences = findCommonSubstrings(
@@ -154,4 +159,4 @@ function stem(word) {
   return stemmer(word);
 }
 
-module.exports = { findCommonSubstrings, findCommonPhrases, stem };
+module.exports = { findCommonSubstrings, findCommonPhrases, findCommonTokens, stem };
