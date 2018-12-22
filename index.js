@@ -36,7 +36,11 @@ function findCommonPhrases(str1 = ``, str2 = ``, options = {}) {
   let tk1 = tokenizer(str1, options);
   let tk2 = tokenizer(str2, options);
 
-  return findCommonTokens(tk1, tk2, options);
+  let sequences = findCommonTokens(tk1, tk2, options);
+  return [
+    makeOutput(sequences, tk1, `offset1`),
+    makeOutput(sequences, tk2, `offset2`)
+  ];
 }
 
 function findCommonTokens(tk1, tk2, options) {
@@ -53,10 +57,7 @@ function findCommonTokens(tk1, tk2, options) {
     sequences = reduceOverlaps(sequences, threshold);
   }
 
-  return [
-    makeOutput(sequences, tk1, `offset1`),
-    makeOutput(sequences, tk2, `offset2`)
-  ];
+  return sequences;
 }
 
 // de-overlap sequences
