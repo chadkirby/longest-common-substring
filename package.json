@@ -26,7 +26,8 @@
     "dist"
   ],
   "scripts": {
-    "test": "vitest",
+    "test": "vitest --run",
+    "test:watch": "vitest",
     "clean": "rm -rf dist",
     "build": "tsc --emitDeclarationOnly && vite build",
     "prepublishOnly": "yarn clean && yarn build",
