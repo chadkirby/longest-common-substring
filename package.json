@@ -1,13 +1,13 @@
 {
   "name": "@ckirby/longest-common-substring",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "find the longest string that is a substring of two strings",
-  "module": "dist/lcs.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/lcs.js",
+      "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
@@ -19,7 +19,6 @@
     "eslint": "^9.3.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^7.13.0",
-    "vite": "^5.2.11",
     "vitest": "^1.6.0"
   },
   "files": [
@@ -29,7 +28,7 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "clean": "rm -rf dist",
-    "build": "tsc --emitDeclarationOnly && vite build",
+    "build": "tsc",
     "prepublishOnly": "yarn clean && yarn build",
     "lint": "eslint ."
   },
