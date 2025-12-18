@@ -34,5 +34,10 @@
   },
   "dependencies": {
     "porter-stemmer": "^0.9.1"
+  },
+  "packageManager": "yarn@1.22.22",
+  "volta": {
+    "node": "22.14.0",
+    "yarn": "1.22.22"
   }
 }
