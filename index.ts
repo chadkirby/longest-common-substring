@@ -1,24 +1,47 @@
-const { memoizingStemmer: stemmer } = require('porter-stemmer');
+import { memoizingStemmer as stemmer } from 'porter-stemmer';
 
 const { assign } = Object;
 
-function findCommonSubstrings(str1 = ``, str2 = ``, { threshold = 3 } = {}) {
-  let arr2 = str2.split(``);
-  let prev = [];
-  let substrings = [];
+interface Substring {
+  offset1: number;
+  substring: string;
+  offset2: number;
+}
+
+interface Options {
+  threshold?: number;
+  trimOverlaps?: boolean;
+  tokenNormalizer?: (tk: string) => string;
+  conflateStems?: boolean;
+  splitter?: RegExp;
+}
+
+interface TokenizerResult {
+  all: string[];
+  tokens: string[];
+}
+
+interface Vocabulary extends Map<string, string> {
+  fromTokens: (tokenizerResult: TokenizerResult) => string;
+}
+
+function findCommonSubstrings(str1 = ``, str2 = ``, { threshold = 3 } = {}): Substring[] {
+  const arr2 = str2.split(``);
+  let prev: number[] = [];
+  const substrings: Substring[] = [];
   str1.split(``).forEach((char1, ii) => {
     prev = arr2.map((char2, jj) => {
       if (char1 !== char2) {
         return 0;
       }
 
-      let length = 1 + (prev[jj - 1] || 0);
+      const length = 1 + (prev[jj - 1] || 0);
 
       if (length >= threshold) {
-        let end = ii + 1;
-        let offset1 = end - length;
-        let substring = str1.substring(offset1, end);
-        let curr = substrings[substrings.length - 1];
+        const end = ii + 1;
+        const offset1 = end - length;
+        const substring = str1.substring(offset1, end);
+        const curr = substrings[substrings.length - 1];
         if (curr && curr.offset1 === offset1) {
           substrings.pop();
         }
@@ -27,25 +50,25 @@ function findCommonSubstrings(str1 = ``, str2 = ``, { threshold = 3 } = {}) {
 
       return length;
     });
-  }, ``);
+  });
 
   return substrings;
 }
 
-function findCommonPhrases(str1 = ``, str2 = ``, options = {}) {
-  let tk1 = tokenizer(str1, options);
-  let tk2 = tokenizer(str2, options);
+function findCommonPhrases(str1 = ``, str2 = ``, options: Options = {}) {
+  const tk1 = tokenizer(str1, options);
+  const tk2 = tokenizer(str2, options);
 
-  let sequences = findCommonTokens(tk1, tk2, options);
+  const sequences = findCommonTokens(tk1, tk2, options);
   return [
     makeOutput(sequences, tk1, `offset1`),
     makeOutput(sequences, tk2, `offset2`)
   ];
 }
 
-function findCommonTokens(tk1, tk2, options) {
-  let { threshold = 3, trimOverlaps = false } = options;
-  let vocabulary = makeVocabulary(tk1);
+function findCommonTokens(tk1: TokenizerResult, tk2: TokenizerResult, options: Options) {
+  const { threshold = 3, trimOverlaps = false } = options;
+  const vocabulary = makeVocabulary(tk1);
 
   let sequences = findCommonSubstrings(
     vocabulary.fromTokens(tk1),
@@ -61,16 +84,16 @@ function findCommonTokens(tk1, tk2, options) {
 }
 
 // de-overlap sequences
-function reduceOverlaps(inputs, threshold = 0) {
+function reduceOverlaps(inputs: Substring[], threshold = 0): Substring[] {
   // sort by descending sequence length
   let sequences = inputs.slice().sort((aa, bb) => bb.substring.length - aa.substring.length);
   sequences.forEach((target, ii) => {
     if (!target.substring.length) {
       return;
     }
-    let start = target.offset1;
-    let end = start + target.substring.length;
-    let candidates = sequences.slice(ii + 1);
+    const start = target.offset1;
+    const end = start + target.substring.length;
+    const candidates = sequences.slice(ii + 1);
     // find sequences that start inside a longer sequence
     let overlapping = candidates.filter(({ offset1 }) => offset1 > start && offset1 <= end);
     // ensure the substring starts at the end of the target.substring
@@ -94,22 +117,22 @@ function reduceOverlaps(inputs, threshold = 0) {
   return sequences.sort(({ offset1: aa }, { offset1: bb }) => aa - bb);
 }
 
-function makeOutput(sequences, { all, tokens }, offsetKey) {
+function makeOutput(sequences: Substring[], { all, tokens }: TokenizerResult, offsetKey: 'offset1' | 'offset2') {
   return sequences.map((seq) => {
-    let tokenOffset = seq[offsetKey];
-    let index = tokenOffset * 2 + 1;
-    let length = 2 * seq.substring.length;
-    let offset = all.slice(0, index).join(``).length;
-    let substring = all.slice(index, index + length - 1).join(``);
+    const tokenOffset = seq[offsetKey];
+    const index = tokenOffset * 2 + 1;
+    const length = 2 * seq.substring.length;
+    const offset = all.slice(0, index).join(``).length;
+    const substring = all.slice(index, index + length - 1).join(``);
     return { offset, substring, tokenOffset, tokens: tokens.slice(tokenOffset, tokenOffset + seq.substring.length) };
   });
 }
 
-function tokenizer(str, { tokenNormalizer = (tk) => tk, conflateStems = false, splitter = /([-\w]+(?:[(]s[)])?)/ }) {
+function tokenizer(str: string, { tokenNormalizer = (tk) => tk, conflateStems = false, splitter = /([-\w]+(?:[(]s[)])?)/ }: Options): TokenizerResult {
   // split on word-chars & dashes with optional trailing "(s)"
-  let all = str.split(splitter);
+  const all = str.split(splitter);
   // odd-indexed items are the tokens
-  let tokens = all.filter((tk, ii) => ii % 2);
+  let tokens = all.filter((_, ii) => ii % 2);
   tokens = tokens.map(tokenNormalizer);
   if (conflateStems) {
     tokens = tokens.map(stem);
@@ -117,12 +140,12 @@ function tokenizer(str, { tokenNormalizer = (tk) => tk, conflateStems = false, s
   return { all, tokens };
 }
 
-function makeVocabulary({ tokens }) {
+function makeVocabulary({ tokens }: TokenizerResult): Vocabulary {
   const NOTFOUND = String.fromCharCode(33);
-  let uniqTokens = [ ...new Set(tokens) ];
-  let vocab = new Map(uniqTokens.map((token, ii) => [ token, String.fromCharCode(ii + 65) ]));
+  const uniqTokens = [ ...new Set(tokens) ];
+  const vocab = new Map(uniqTokens.map((token, ii) => [ token, String.fromCharCode(ii + 65) ]));
   return assign(vocab, {
-    fromTokens({ tokens }) {
+    fromTokens({ tokens }: TokenizerResult) {
       return tokens.map((tk) => vocab.get(tk) || NOTFOUND).join(``);
     }
   });
@@ -140,7 +163,7 @@ const IRREGULARS = new Map([
   [ 'had', stemmer('have') ]
 ]);
 
-function stem(word) {
+function stem(word: string): string {
   if (!word) {
     return '';
   }
@@ -152,7 +175,7 @@ function stem(word) {
     return word.split(/\W+/).map(stem).join(' ').trim().replace(/\s+/, ' ');
   }
 
-  let irregularStem = IRREGULARS.get(word);
+  const irregularStem = IRREGULARS.get(word);
   if (irregularStem) {
     return irregularStem;
   }
@@ -160,4 +183,4 @@ function stem(word) {
   return stemmer(word);
 }
 
-module.exports = { findCommonSubstrings, findCommonPhrases, findCommonTokens, stem };
+export { findCommonSubstrings, findCommonPhrases, findCommonTokens, stem };
