@@ -1,29 +1,43 @@
 {
   "name": "@ckirby/longest-common-substring",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "find the longest string that is a substring of two strings",
-  "main": "index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "author": "Chad Kirby",
   "repository": "https://github.com/chadkirby/longest-common-substring",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^5.9.0",
-    "eslint-plugin-turbopatent": "^3.0.2",
-    "parcel-bundler": "^1.11.0",
-    "tape": "^4.9.1"
+    "@types/node": "^20.12.7",
+    "eslint": "^9.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^7.13.0",
+    "vitest": "^1.6.0"
   },
   "files": [
-    "index.js",
-    "umd"
+    "dist"
   ],
   "scripts": {
-    "test": "tape tests/*-test.js && yarn lint",
-    "clean": "rm -rf umd",
-    "build": "parcel build index.js  --out-dir umd --out-file lcs.min.js --global longestCommonSubstring",
-    "prepublish": "yarn clean && yarn build",
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "prepublishOnly": "yarn clean && yarn build",
     "lint": "eslint ."
   },
   "dependencies": {
     "porter-stemmer": "^0.9.1"
+  },
+  "packageManager": "yarn@1.22.22",
+  "volta": {
+    "node": "22.14.0",
+    "yarn": "1.22.22"
   }
 }
