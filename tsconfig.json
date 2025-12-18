@@ -10,8 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
     "declaration": true,
-    "declarationDir": "dist",
-    "rootDir": "."
+    "declarationDir": "dist"
   },
   "include": ["index.ts"]
 }
